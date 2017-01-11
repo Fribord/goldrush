@@ -1,10 +1,37 @@
-.eunit
-*.beam
-.rebar
+# rebar
+*.crashdump
+/.cache/
+/.eqc*
+/.eunit/
+/.rebar/
+/.rebar3/
+/_build/
+/_checkouts
+/deps
+/rebar.lock
+
+# work environments
+*.bak
+*.dump
+*.iml
 *.plt
-ebin
-doc
-*.swp
-erl_crash.dump
+*.sublime-project
+*.sublime-workspace
+*.tmp
+*.txt
+*_plt
+*~
+.DS_Store
+.idea/
 .project
-log
+.settings/
+.tm_properties
+erln8.config
+tmp/
+
+# build/test artifacts
+*.app
+*.beam
+/doc/
+/ebin/
+log/

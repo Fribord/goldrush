@@ -15,12 +15,12 @@
 
 %% @doc Process table manager for goldrush.
 %%
-%% Manager responsible for the processes, which serve as heir of the 
+%% Manager responsible for the processes, which serve as heir of the
 %% {@link gr_counter:start_link/0. <em>Counter</em>} and
 %% {@link gr_param:start_link/0. <em>Param</em>} ets table processes.
 %% This process creates the table and initial data then assigns itself
 %% to inherit the ets table if any process responsible for it is killed.
-%% It then waits to give it back while that process is recreated by its 
+%% It then waits to give it back while that process is recreated by its
 %% supervisor.
 -module(gr_manager).
 -behaviour(gen_server).
@@ -53,7 +53,7 @@ setup(Name, Data) ->
 %% @doc
 %% Starts the server
 %%
-%% @spec start_link(Name, Managee, Data) -> {ok, Pid} | ignore | 
+%% @spec start_link(Name, Managee, Data) -> {ok, Pid} | ignore |
 %%                                          {error, Error}
 %% @end
 %%--------------------------------------------------------------------
@@ -139,12 +139,12 @@ handle_info({'ETS-TRANSFER', TableId, _Pid, Data}, State = #state{managee=Manage
 
 %% @doc Wait for a registered process to be associated to a process identifier.
 %% @spec wait_for_pid(Managee) -> ManageePid
--spec wait_for_pid(atom()) -> pid().
-wait_for_pid(Managee) when is_pid(Managee) -> 
+-spec wait_for_pid(atom() | pid()) -> pid().
+wait_for_pid(Managee) when is_pid(Managee) ->
     Managee;
-wait_for_pid(Managee) when is_atom(Managee), Managee =/= undefined -> 
+wait_for_pid(Managee) when is_atom(Managee), Managee =/= undefined ->
     case whereis(Managee) of
-        undefined -> 
+        undefined ->
             timer:sleep(1),
             wait_for_pid(Managee);
         ManageePid -> ManageePid

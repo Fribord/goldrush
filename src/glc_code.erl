@@ -66,7 +66,7 @@ abstract_module(Module, Data) ->
 
 %% @private Generate an abstract dispatch module.
 -spec abstract_module_(atom(), #module{}) -> [?erl:syntaxTree()].
-abstract_module_(Module, #module{tables=Tables, 
+abstract_module_(Module, #module{tables=Tables,
                                  qtree=Tree, store=Store}=Data) ->
     {_, ParamsTable} = lists:keyfind(params, 1, Tables),
     {_, CountsTable} = lists:keyfind(counters, 1, Tables),
@@ -161,11 +161,11 @@ abstract_module_(Module, #module{tables=Tables,
                           ?erl:catch_expr(
                             abstract_apply(glc_run, execute, [
                                 ?erl:variable("Fun"),
-                                ?erl:list([?erl:variable("Meta"), 
+                                ?erl:list([?erl:variable("Meta"),
                                            ?erl:abstract(Store)])
                             ])),
                             ?erl:variable("Meta")])
-             ] 
+             ]
         )]),
      ?erl:function(
         ?erl:atom(job_result),
@@ -185,9 +185,9 @@ abstract_tables(Tables) ->
 
 abstract_query_find(K, Store) ->
     case lists:keyfind(K, 1, Store) of
-        {_, Val} -> 
+        {_, Val} ->
             {ok, Val};
-        _ ->  
+        _ ->
             {error, notfound}
     end.
 
@@ -214,11 +214,11 @@ abstract_query(Query) ->
 abstract_get(#module{'query'=_Query, store=undefined}) ->
     [];
 abstract_get(#module{'query'=_Query, store=Store}) ->
-    [?erl:clause([?erl:abstract(K)], none, 
+    [?erl:clause([?erl:abstract(K)], none,
                  abstract_query(abstract_query_find(K, Store)))
         || {K, _} <- Store].
 
-%% @private 
+%% @private
 abstract_runjob(#module{'query'=_Query, store=_Store}) ->
     Time = abstract_apply(erlang, '/', [?erl:variable("Time"),
                                         ?erl:abstract(1000000)]),
@@ -236,22 +236,22 @@ abstract_runjob(#module{'query'=_Query, store=_Store}) ->
                   [?erl:tuple([?erl:atom(error),?erl:variable("Reason")])],
                   none,
                   [abstract_count(input), abstract_count(job_error),
-                   ?erl:application(none, ?erl:atom(handle_), 
-                        abstract_job(Time, [?erl:tuple([?erl:atom(error), 
+                   ?erl:application(none, ?erl:atom(handle_),
+                        abstract_job(Time, [?erl:tuple([?erl:atom(error),
                                                         ?erl:variable("Reason")])])),
                    abstract_count(job_time, ?erl:variable("Time")),
-                   ?erl:tuple([?erl:variable("Time"), 
-                               ?erl:tuple([?erl:atom(error), 
+                   ?erl:tuple([?erl:variable("Time"),
+                               ?erl:tuple([?erl:atom(error),
                                            ?erl:variable("Reason")])])]),
 
                 ?erl:clause(
                   [?erl:variable("Result")],
                   none,
                   [abstract_count(input), abstract_count(job_run),
-                   ?erl:application(none, ?erl:atom(handle_), 
+                   ?erl:application(none, ?erl:atom(handle_),
                         abstract_job(Time)),
                    abstract_count(job_time, ?erl:variable("Time")),
-                   ?erl:tuple([?erl:variable("Time"), 
+                   ?erl:tuple([?erl:variable("Time"),
                                ?erl:variable("Result")])])
                ])
             ])
@@ -264,8 +264,8 @@ abstract_job(Time) ->
 abstract_job(Time, Error) ->
     Pairs = abstract_apply(gre, pairs, [?erl:variable("Meta")]),
     Runtime = ?erl:list([?erl:tuple([?erl:atom(runtime), Time])]),
-    [abstract_apply(gre, make, 
-              [abstract_apply(erlang, '++', [?erl:list(Error), 
+    [abstract_apply(gre, make,
+              [abstract_apply(erlang, '++', [?erl:list(Error),
                              abstract_apply(erlang, '++', [Pairs, Runtime])]),
                ?erl:abstract([list])])].
 
@@ -287,8 +287,8 @@ abstract_info(#module{'query'=Query}) ->
 abstract_reset() ->
     [?erl:clause([?erl:abstract(K)], none, V)
         || {K, V} <- [
-        {all, abstract_resetcount([input, filter, output, 
-                                   job_input, job_run, 
+        {all, abstract_resetcount([input, filter, output,
+                                   job_input, job_run,
                                    job_time, job_error])},
         {input, abstract_resetcount(input)},
         {filter, abstract_resetcount(filter)},
@@ -308,19 +308,19 @@ abstract_filter({Type, [{with, _Cond, _Fun}|_] = I}, Data, State) when Type =:= 
     abstract_filter_(Cond,
         _OnMatch=fun(State2) ->
             Funs = [ F || {with, _, F} <- I ],
-            [abstract_count(output)] ++ 
+            [abstract_count(output)] ++
                 abstract_with(Funs, Data, State2) end,
         _OnNomatch=fun(_State2) -> [abstract_count(filter)] end, State);
 abstract_filter([{with, _Cond, _Fun}|_] = I, Data, State) ->
     OnNomatch = fun(_State2) -> [abstract_count(filter, 0)] end,
-    Funs = lists:foldr(fun({with, Cond, Fun}, Acc) -> 
+    Funs = lists:foldr(fun({with, Cond, Fun}, Acc) ->
               [{Cond, Fun, Data}|Acc]
       end, [], I),
     abstract_within(Funs, OnNomatch, State);
 abstract_filter({with, Cond, Fun}, Data, State) ->
     abstract_filter_(Cond,
         _OnMatch=fun(State2) ->
-            [abstract_count(output)] ++ 
+            [abstract_count(output)] ++
                 abstract_with(Fun, Data, State2) end,
         _OnNomatch=fun(_State2) -> [abstract_count(filter)] end, State);
 abstract_filter(Cond, _Data, State) ->
@@ -345,17 +345,17 @@ abstract_filter_({Key, '*'}, OnMatch, OnNomatch, State) ->
         _OnNomatch=fun(State2) -> OnNomatch(State2) end, State);
 abstract_filter_({Key, '!'}, OnMatch, OnNomatch, State) ->
     abstract_getkey(Key,
-        _OnNomatch=fun(State2) -> OnNomatch(State2) end, 
+        _OnNomatch=fun(State2) -> OnNomatch(State2) end,
         _OnMatch=fun(#state{}=State2) -> OnMatch(State2) end,
                     State);
 abstract_filter_({Key, Op, Value}, OnMatch, OnNomatch, State)
         when Op =:= '>'; Op =:= '='; Op =:= '!='; Op =:= '<';
              Op =:= '>='; Op =:= '=<'; Op =:= '<=' ->
-    Op2 = case Op of 
-              '=' -> '=:=';  
-              '!=' -> '=/=';  
+    Op2 = case Op of
+              '=' -> '=:=';
+              '!=' -> '=/=';
               '<=' -> '=<';
-              Op -> Op 
+              Op -> Op
           end,
     abstract_opfilter(Key, Op2, Value, OnMatch, OnNomatch, State);
 abstract_filter_({'any', Conds}, OnMatch, OnNomatch, State) ->
@@ -374,7 +374,7 @@ abstract_opfilter(Key, Opname, Value, OnMatch, OnNomatch, State) ->
                         ?erl:variable(field_variable(Key)),
                         ?erl:abstract(Value)
                 ]),
-                [?erl:clause([?erl:atom(true)], none, 
+                [?erl:clause([?erl:atom(true)], none,
                     OnMatch(State2)),
                  ?erl:clause([?erl:atom(false)], none,
                     OnNomatch(State2))])] end,
@@ -405,12 +405,13 @@ abstract_any([], _OnMatch, OnNomatch, State) ->
     OnNomatch(State).
 
 %% @private
--spec abstract_with(fun((gre:event()) -> term()), 
-                    #module{}, #state{}) -> [syntaxTree()].
-abstract_with([Fun0|_] = Funs, Data, State) 
+-spec abstract_with(
+        fun((gre:event()) -> term()) | [fun((gre:event()) -> term()) | nextFun()],
+        #module{}, #state{}) -> [syntaxTree()].
+abstract_with([Fun0|_] = Funs, Data, State)
   when is_function(Fun0, 1); is_function(Fun0, 2)  ->
     abstract_getparam(Funs, fun(#state{event=Event, paramvars=Params}) ->
-           lists:map(fun(Fun) -> 
+           lists:map(fun(Fun) ->
                 {_, Fun2} = lists:keyfind(Fun, 1, Params),
                 abstract_with_({Fun, Fun2}, Event, Data)
            end, Funs)
@@ -422,20 +423,20 @@ abstract_with(Fun, Data, State) when is_function(Fun, 1); is_function(Fun, 2)  -
         end, State).
 
 abstract_within([{H, Fun, Data}|T], OnNomatch, State) ->
-    OnMatch = fun(State2) -> [abstract_count(output)] ++ 
-                              abstract_with(Fun, Data, State2) 
+    OnMatch = fun(State2) -> [abstract_count(output)] ++
+                              abstract_with(Fun, Data, State2)
                            ++ abstract_within(T, OnNomatch, State2)
               end,
     abstract_filter_(H, OnMatch,
-        _OnNomatch=fun(State2) -> 
-                           [abstract_count(filter)] ++ 
+        _OnNomatch=fun(State2) ->
+                           [abstract_count(filter)] ++
                             abstract_within(T, OnNomatch, State2)
         end, State);
 abstract_within([], OnNomatch, State) ->
     OnNomatch(State).
 
 abstract_with_({Fun, Fun2}, Event, #module{store=Store}) ->
-    ?erl:application(none, Fun2, 
+    ?erl:application(none, Fun2,
                      case Fun of
                          _ when is_function(Fun, 1) ->
                              [Event];
@@ -481,13 +482,13 @@ abstract_getkey_(Key, OnMatch, OnNomatch, #state{
 %% parameter. At runtime a unique integer is used as the identity.
 -spec abstract_getparam(term(), nextFun(), #state{}) -> [syntaxTree()].
 abstract_getparam([_|_]=Terms, OnBound, #state{paramvars=_Params, fields=_Fields,
-                                         paramstab=_ParamsTable}=State) 
+                                         paramstab=_ParamsTable}=State)
                                     when is_list(Terms) ->
 
     {Keys, Bound} = lists:foldl(fun(Term, {Acc0, #state{paramvars=Params,
                                          paramstab=ParamsTable}=State0}) ->
         case lists:keyfind(Term, 1, Params) of
-            {_, _Variable} -> 
+            {_, _Variable} ->
                 {Acc0, State0};
 
             false ->
@@ -575,7 +576,7 @@ abstract_count(Counter, Value) ->
 
 %% @private Return an expression to get the value of a counter.
 %% @todo Pass state record. Only Generate code if `statistics' is enabled.
--spec abstract_getcount(atom()) -> [syntaxTree()].
+-spec abstract_getcount(atom() | syntaxTree()) -> [syntaxTree()].
 abstract_getcount(Counter) when is_atom(Counter) ->
     abstract_getcount(?erl:abstract(Counter));
 abstract_getcount(Counter) ->
@@ -583,8 +584,8 @@ abstract_getcount(Counter) ->
         [abstract_apply(table, [?erl:atom(counters)]), Counter])].
 
 %% @private Return an expression to reset a counter.
--spec abstract_resetcount(atom() | [filter | input | output | 
-                                    job_input | job_run | job_time | job_error ]) 
+-spec abstract_resetcount(atom() | [filter | input | output |
+                                    job_input | job_run | job_time | job_error ])
                                                             -> [syntaxTree()].
 abstract_resetcount(Counter) ->
     [abstract_apply(gr_counter, reset_counters,

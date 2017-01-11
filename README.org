@@ -30,15 +30,15 @@ Goldrush is a small Erlang app that provides fast event stream processing
 * Handle fastest lookups of stored values.
 - provide state storage option to compile, caching the values in query module.
 
-* Usage 
+* Usage
   To use goldrush in your application, you need to define it as a rebar dep or
   include it in erlang's path.
 
 
-Before composing modules, you'll need to define a query. The query syntax 
+Before composing modules, you'll need to define a query. The query syntax
 matches any number of `{erlang, terms}' and is composed as follows:
 
-* Simple Logic 
+* Simple Logic
  - Simple logic is defined as any logic matching a single event filter
 
 Select all events where 'a' exists and is greater than 0.
@@ -134,10 +134,10 @@ The previous example will produce and is equivalent to:
 
 
 
-* Composing Modules 
+* Composing Modules
   - All query modules must be compiled before use
 
-To compose a module you will take your Query defined above and compile it. 
+To compose a module you will take your Query defined above and compile it.
 #+BEGIN_EXAMPLE
     glc:compile(Module, Query).
     glc:compile(Module, Query, State).
@@ -145,7 +145,7 @@ To compose a module you will take your Query defined above and compile it.
 #+END_EXAMPLE
 
 
-- At this point you will be able to handle an event using a compiled query. 
+- At this point you will be able to handle an event using a compiled query.
 
 Begin by constructing an event list.
 #+BEGIN_EXAMPLE
@@ -211,8 +211,8 @@ To compose a module with state data you will add a third argument (orddict).
     glc:compile(Module, Query, [{stored, value}]).
 #+END_EXAMPLE
 
-* Accessing stored data in constant time 
- - You can use query modules in a way similar to mochiglobal 
+* Accessing stored data in constant time
+ - You can use query modules in a way similar to mochiglobal
 
 Return the stored value in this query module.
 #+BEGIN_EXAMPLE
@@ -220,7 +220,7 @@ Return the stored value in this query module.
 #+END_EXAMPLE
 
 
-* Job processing with composed modules 
+* Job processing with composed modules
   - You can use query modules to execute jobs, if the job errors or not, process an event.
   - `with' is similar to `run', the main difference is additional statistics and execution order
   - when a job completes in error, the event data will contain an additional {error, _} item
@@ -229,11 +229,11 @@ To execute a job through the query module, inputting an event on success.
 #+BEGIN_EXAMPLE
     Event = gre:make([{'a', 2}], [list]).
     {ExecutionTime, Result}= glc:run(Module, fun(Event, State) ->
-        %% do not end with {error, _} or throw an exception 
+        %% do not end with {error, _} or throw an exception
     end, Event).
 #+END_EXAMPLE
 
-* Event Processing Statistics 
+* Event Processing Statistics
 
 Return the number of input events for this query module.
 #+BEGIN_EXAMPLE
@@ -251,7 +251,7 @@ glc:filter(Module).
 #+END_EXAMPLE
 
 
-* Job Processing Statistics 
+* Job Processing Statistics
 
 Return the number of job runs for this query module.
 #+BEGIN_EXAMPLE
@@ -274,7 +274,7 @@ glc:job_time(Module).
 #+END_EXAMPLE
 
 
-* Some Tips & Tricks 
+* Some Tips & Tricks
   - This is really just a drop in the bucket.
 
 Return the average time jobs took for this query module.
@@ -283,7 +283,7 @@ glc:job_time(Module) / glc:job_input(Module) / 1000000.
 #+END_EXAMPLE
 
 
-Return the query combining the conditional logic of multiple modules 
+Return the query combining the conditional logic of multiple modules
 #+BEGIN_EXAMPLE
 glc_lib:reduce(glc:all([Module1:info('query'), Module2:info('query')]).
 #+END_EXAMPLE
@@ -296,16 +296,10 @@ glc:info(Module).
 * Build
 
 #+BEGIN_EXAMPLE
- $ ./rebar compile
+ $ rebar3 compile
 #+END_EXAMPLE
 
-or
-
-#+BEGIN_EXAMPLE
-    $ make
-#+END_EXAMPLE
-
-* CHANGELOG 
+* CHANGELOG
 0.1.9
 - Add support for running jobs
 
@@ -313,24 +307,24 @@ or
 - Add support for not equal
 
 0.1.7
-- Support multiple functions specified using `with/2` 
+- Support multiple functions specified using `with/2`
 - Add support for greater than or less than operators
 - Add state storage option for output events or lookup
 
 0.1.7
 - Add job execution and timings
-- Add state storage option 
+- Add state storage option
 
 0.1.7
 - Add job execution and timings
-- Add state storage option 
+- Add state storage option
 
-0.1.6 
+0.1.6
 - Add notfound event matching
 
-0.1.5 
+0.1.5
 - Rewrite to make highly crash resilient
   - per module supervision
-  - statistics data recovery 
+  - statistics data recovery
 - Add wildcard event matching
 - Add reset counters
