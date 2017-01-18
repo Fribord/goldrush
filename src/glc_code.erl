@@ -333,8 +333,8 @@ abstract_filter(Cond, _Data, State) ->
 %% to apply when the filter matches or fails to match. The state passed to the
 %% functions will contain all the variable bindings of previously accessed
 %% fields and parameters.
--spec abstract_filter_(glc_ops:op(), nextFun(), nextFun(), #state{}) ->
-        syntaxTree().
+-spec abstract_filter_(glc_ops:op(), nextFun(), nextFun(), #state{})
+            -> [syntaxTree()].
 abstract_filter_({null, true}, OnMatch, _OnNomatch, State) ->
     OnMatch(State);
 abstract_filter_({null, false}, _OnMatch, OnNomatch, State) ->
